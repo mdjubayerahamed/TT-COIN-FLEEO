@@ -1,0 +1,43 @@
+import React from 'react';
+import { Coins } from 'lucide-react';
+import CrudSection from '@/components/admin/CrudSection';
+import { taka, num, packageDiscount } from '@/lib/format';
+
+const FIELDS = [
+  { key: 'coin_amount', label: 'কয়েন পরিমাণ *', type: 'number', required: true },
+  { key: 'old_price', label: 'পুরাতন দাম (৳)', type: 'number' },
+  { key: 'new_price', label: 'নতুন দাম (৳) *', type: 'number', required: true },
+  { key: 'discount', label: 'ডিসকাউন্ট (%) — খালি রাখলে অটো হিসাব', type: 'number' },
+  { key: 'description', label: 'বিবরণ', type: 'textarea' },
+  { key: 'image_url', label: 'ছবি / আইকন', type: 'image' },
+  { key: 'sort_order', label: 'ক্রম (ছোট সংখ্যা আগে)', type: 'number' },
+  { key: 'is_active', label: 'প্যাকেজ চালু (ON/OFF)', type: 'switch' },
+];
+
+export default function AdminPackages() {
+  return (
+    <CrudSection
+      entity="CoinPackage"
+      title="কয়েন প্যাকেজ"
+      subtitle="দাম পরিবর্তন করলে ইউজার প্যানেলে সাথে সাথে আপডেট হবে"
+      fields={FIELDS}
+      defaults={{ is_active: true, sort_order: 0 }}
+      grid="sm:grid-cols-2 xl:grid-cols-3"
+      renderItem={(p) => (
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#25F4EE]/20 to-[#FE2C55]/20 grid place-items-center overflow-hidden">
+            {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <Coins className="w-5 h-5 text-[#25F4EE]" />}
+          </div>
+          <div>
+            <div className="font-heading font-bold text-lg">{num(p.coin_amount)} Coins</div>
+            <div className="text-sm">
+              {p.old_price > 0 && <span className="line-through text-white/35 mr-2">{taka(p.old_price)}</span>}
+              <span className="text-[#25F4EE] font-semibold">{taka(p.new_price)}</span>
+              {packageDiscount(p) > 0 && <span className="ml-2 text-xs text-[#FE2C55]">-{packageDiscount(p)}%</span>}
+            </div>
+          </div>
+        </div>
+      )}
+    />
+  );
+}
