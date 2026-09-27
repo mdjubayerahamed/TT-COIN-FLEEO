@@ -1,0 +1,49 @@
+import React from 'react';
+import { Users, ShoppingBag, Clock, CheckCircle2, Wallet, Hourglass, Settings, ArrowRight } from 'lucide-react';
+import { useLive } from '@/lib/live';
+import { taka } from '@/lib/format';
+import StatCard from '@/components/common/StatCard';
+import PageTitle from '@/components/admin/PageTitle';
+import OrderList from '@/components/dashboard/OrderList';
+
+export default function AdminOverview({ onNavigate }) {
+  const { data: users = [] } = useLive('User', { sort: '-created_date', limit: 1000 });
+  const { data: orders } = useLive('Order');
+  const { data: deposits } = useLive('Deposit');
+
+  const approved = deposits.filter((d) => d.status === 'approved');
+  const pendingDep = deposits.filter((d) => d.status === 'pending');
+
+  const stats = [
+    { label: 'মোট ইউজার', value: users.length, icon: Users },
+    { label: 'মোট অর্ডার', value: orders.length, icon: ShoppingBag },
+    { label: 'পেন্ডিং অর্ডার', value: orders.filter((o) => o.status === 'pending').length, icon: Clock, accent: 'text-amber-300' },
+    { label: 'সম্পন্ন অর্ডার', value: orders.filter((o) => o.status === 'completed').length, icon: CheckCircle2, accent: 'text-emerald-300' },
+    { label: 'মোট ডিপোজিট', value: taka(approved.reduce((s, d) => s + (d.amount || 0), 0)), icon: Wallet },
+    { label: `পেন্ডিং ডিপোজিট (${pendingDep.length})`, value: taka(pendingDep.reduce((s, d) => s + (d.amount || 0), 0)), icon: Hourglass, accent: 'text-amber-300' },
+  ];
+
+  return (
+    <div>
+      <PageTitle title="অ্যাডমিন ড্যাশবোর্ড" subtitle="আপনার মার্কেটপ্লেসের সার্বিক অবস্থা" />
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        {stats.map((s, i) => <StatCard key={s.label} {...s} index={i} />)}
+      </div>
+      <button
+        onClick={() => onNavigate('settings')}
+        className="mt-4 w-full glass rounded-2xl p-5 flex items-center justify-between hover:border-white/20 transition text-left"
+      >
+        <span className="flex items-center gap-3">
+          <Settings className="w-5 h-5 text-[#FE2C55]" />
+          <span>
+            <span className="block font-semibold">ওয়েবসাইট সেটিংস</span>
+            <span className="text-xs text-white/45">নাম, লোগো, ব্যানার, নোটিশ, সাপোর্ট লিংক</span>
+          </span>
+        </span>
+        <ArrowRight className="w-4 h-4 text-white/40" />
+      </button>
+      <h2 className="font-heading font-semibold mt-8 mb-3">সাম্প্রতিক অর্ডার</h2>
+      <OrderList orders={orders.slice(0, 5)} />
+    </div>
+  );
+}
