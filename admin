@@ -1,0 +1,65 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { LayoutDashboard, ShoppingBag, Wallet, Users, Coins, CreditCard, Images, ImagePlus, Settings, ShieldX } from 'lucide-react';
+import useMe from '@/hooks/useMe';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import AdminOverview from '@/components/admin/AdminOverview';
+import AdminOrders from '@/components/admin/AdminOrders';
+import AdminDeposits from '@/components/admin/AdminDeposits';
+import AdminUsers from '@/components/admin/AdminUsers';
+import AdminPackages from '@/components/admin/AdminPackages';
+import AdminPayments from '@/components/admin/AdminPayments';
+import AdminSliders from '@/components/admin/AdminSliders';
+import AdminPopup from '@/components/admin/AdminPopup';
+import AdminSettings from '@/components/admin/AdminSettings';
+import AdminNotifications from '@/components/admin/AdminNotifications';
+
+const TABS = [
+  { id: 'overview', label: 'ড্যাশবোর্ড', icon: LayoutDashboard, C: AdminOverview },
+  { id: 'orders', label: 'অর্ডার', icon: ShoppingBag, C: AdminOrders },
+  { id: 'deposits', label: 'ডিপোজিট', icon: Wallet, C: AdminDeposits },
+  { id: 'users', label: 'ইউজার', icon: Users, C: AdminUsers },
+  { id: 'packages', label: 'কয়েন প্যাকেজ', icon: Coins, C: AdminPackages },
+  { id: 'payments', label: 'পেমেন্ট মেথড', icon: CreditCard, C: AdminPayments },
+  { id: 'sliders', label: 'স্লাইডার', icon: Images, C: AdminSliders },
+  { id: 'popup', label: 'পপআপ', icon: ImagePlus, C: AdminPopup },
+  { id: 'settings', label: 'ওয়েবসাইট সেটিংস', icon: Settings, C: AdminSettings },
+];
+
+export default function Admin() {
+  const { data: user, isLoading } = useMe();
+  const [tab, setTab] = useState('overview');
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 grid place-items-center">
+        <div className="w-8 h-8 border-2 border-white/10 border-t-[#25F4EE] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen grid place-items-center p-6 text-center">
+        <div className="glass rounded-3xl p-10 max-w-sm">
+          <ShieldX className="w-12 h-12 mx-auto text-rose-400" />
+          <h1 className="font-heading text-xl font-bold mt-4">প্রবেশাধিকার নেই</h1>
+          <p className="text-sm text-white/50 mt-2">এই পেজটি শুধুমাত্র অ্যাডমিনদের জন্য।</p>
+          <Link to="/" className="mt-6 inline-block btn-glow rounded-xl px-5 py-2.5 text-sm">হোমে ফিরে যান</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const Active = TABS.find((t) => t.id === tab).C;
+
+  return (
+    <div className="min-h-screen md:flex">
+      <AdminSidebar tabs={TABS} tab={tab} setTab={setTab} />
+      <main className="flex-1 min-w-0 p-4 md:p-8 lg:p-10">
+        <Active onNavigate={setTab} />
+      </main>
+      <AdminNotifications />
+    </div>
+  );
+}
