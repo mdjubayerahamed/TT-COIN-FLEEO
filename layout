@@ -1,0 +1,44 @@
+import React, { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import useMe from '@/hooks/useMe';
+import { invalidateLive } from '@/lib/live';
+
+const KEY = 'fleeo_ref';
+
+export default function ReferralTracker() {
+  const { data: user } = useMe();
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem(KEY, ref);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('ref');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const ref = localStorage.getItem(KEY);
+    if (!ref) return;
+    if (user.referred_by || ref === user.id) { localStorage.removeItem(KEY); return; }
+
+    (async () => {
+      try {
+        await base44.auth.updateMe({ referred_by: ref });
+        await base44.entities.Referral.create({ referrer_id: ref, referred_user_id: user.id, type: 'signup', amount: 1, status: 'paid' });
+        localStorage.removeItem(KEY);
+        qc.invalidateQueries(['me']);
+        invalidateLive(qc, 'Referral');
+      } catch (e) {
+        localStorage.removeItem(KEY);
+      }
+    })();
+  }, [user?.id, user?.referred_by]);
+
+  return null;
+}
