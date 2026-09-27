@@ -1,0 +1,21 @@
+import { useLive } from '@/lib/live';
+import { calcBalance } from '@/lib/balance';
+
+export default function useWallet(user) {
+  const id = user?.id;
+  const enabled = !!id;
+  const deposits = useLive('Deposit', { filter: { user_id: id }, enabled });
+  const orders = useLive('Order', { filter: { user_id: id }, enabled });
+  const adjustments = useLive('BalanceAdjustment', { filter: { user_id: id }, enabled });
+  const referrals = useLive('Referral', { filter: { referrer_id: id }, enabled });
+  const blocks = useLive('UserBlock', { filter: { user_id: id }, enabled });
+
+  return {
+    balance: id ? calcBalance(id, deposits.data, orders.data, adjustments.data, referrals.data) : 0,
+    orders: orders.data,
+    deposits: deposits.data,
+    referrals: referrals.data,
+    blocked: blocks.data.length > 0,
+    isLoading: deposits.isLoading || orders.isLoading,
+  };
+}
