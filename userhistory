@@ -1,0 +1,50 @@
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import OrderList from '@/components/dashboard/OrderList';
+import DepositList from '@/components/dashboard/DepositList';
+import { taka, fmtDate } from '@/lib/format';
+
+export default function UserHistoryDialog({ user, orders, deposits, adjustments, onClose }) {
+  const mine = (arr) => arr.filter((x) => x.user_id === user?.id);
+  const tab = 'rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white';
+
+  return (
+    <Dialog open={!!user} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="bg-[#0c0e15]/95 backdrop-blur-2xl border-white/10 text-white rounded-3xl max-w-2xl max-h-[88vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-heading">{user?.full_name || user?.email}</DialogTitle>
+        </DialogHeader>
+        <Tabs defaultValue="orders">
+          <TabsList className="bg-white/5 rounded-xl p-1">
+            <TabsTrigger value="orders" className={tab}>অর্ডার</TabsTrigger>
+            <TabsTrigger value="deposits" className={tab}>ডিপোজিট</TabsTrigger>
+            <TabsTrigger value="adj" className={tab}>সমন্বয়</TabsTrigger>
+          </TabsList>
+          <TabsContent value="orders" className="mt-4">
+            <OrderList orders={mine(orders)} />
+          </TabsContent>
+          <TabsContent value="deposits" className="mt-4">
+            <DepositList deposits={mine(deposits)} />
+          </TabsContent>
+          <TabsContent value="adj" className="mt-4 space-y-2">
+            {mine(adjustments).length === 0 && (
+              <p className="text-sm text-white/45 text-center py-6">কোনো সমন্বয় নেই</p>
+            )}
+            {mine(adjustments).map((a) => (
+              <div key={a.id} className="glass rounded-xl p-3 flex justify-between text-sm">
+                <span>
+                  {a.reason || 'ম্যানুয়াল সমন্বয়'}{' '}
+                  <span className="text-white/40 text-xs block">{fmtDate(a.created_date)}</span>
+                </span>
+                <span className={a.amount < 0 ? 'text-rose-300' : 'text-emerald-300'}>
+                  {a.amount > 0 ? '+' : ''}{taka(a.amount)}
+                </span>
+              </div>
+            ))}
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
