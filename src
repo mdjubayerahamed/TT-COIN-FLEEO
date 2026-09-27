@@ -1,0 +1,19 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Image } from '@/components/ui/image';
+
+export default function Logo({ settings, to = '/' }) {
+  return (
+    <Link to={to} className="flex items-center gap-2.5 shrink-0">
+      {settings.logo_url ? (
+        <Image src={settings.logo_url} alt={settings.site_name} className="h-9 w-9 rounded-xl object-cover" />
+      ) : (
+        <div className="relative h-9 w-9 rounded-xl bg-gradient-to-br from-[#25F4EE] to-[#FE2C55] grid place-items-center shadow-[0_0_28px_-4px_rgba(37,244,238,0.55)]">
+          <span className="font-heading font-extrabold text-[13px] text-[#07080d] tracking-tight">TT</span>
+          <span className="absolute inset-[3px] rounded-[9px] border border-black/10" />
+        </div>
+      )}
+      <span className="font-heading font-bold tracking-tight text-[15px] sm:text-lg whitespace-nowrap">{settings.site_name}</span>
+    </Link>
+  );
+}
