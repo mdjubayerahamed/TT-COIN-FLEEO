@@ -1,0 +1,8 @@
+// Balance = approved deposits + admin adjustments + paid referrals − non-cancelled orders
+export function calcBalance(userId, deposits, orders, adjustments, referrals = []) {
+  const dep = deposits.filter((d) => d.user_id === userId && d.status === 'approved').reduce((s, d) => s + (d.amount || 0), 0);
+  const adj = adjustments.filter((a) => a.user_id === userId).reduce((s, a) => s + (a.amount || 0), 0);
+  const ref = referrals.filter((r) => r.referrer_id === userId && r.status === 'paid').reduce((s, r) => s + (r.amount || 0), 0);
+  const spent = orders.filter((o) => o.user_id === userId && o.status !== 'cancelled').reduce((s, o) => s + (o.price || 0), 0);
+  return dep + adj + ref - spent;
+}
