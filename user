@@ -1,0 +1,24 @@
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import MobileNav from '@/components/layout/MobileNav';
+import SupportButtons from '@/components/layout/SupportButtons';
+import SessionPopup from '@/components/layout/SessionPopup';
+import WelcomeVoice from '@/components/layout/WelcomeVoice';
+import ReferralTracker from '@/components/layout/ReferralTracker';
+
+export default function UserLayout() {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1"><Outlet /></main>
+      <Footer />
+      <MobileNav />
+      <SupportButtons />
+      <SessionPopup />
+      <WelcomeVoice />
+      <ReferralTracker />
+    </div>
+  );
+}
