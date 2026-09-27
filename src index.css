@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 230 30% 4%;
+    --foreground: 220 20% 96%;
+    --card: 230 25% 8%;
+    --card-foreground: 220 20% 96%;
+    --popover: 230 25% 8%;
+    --popover-foreground: 220 20% 96%;
+    --primary: 178 90% 55%;
+    --primary-foreground: 230 30% 6%;
+    --secondary: 230 20% 14%;
+    --secondary-foreground: 220 20% 96%;
+    --muted: 230 20% 12%;
+    --muted-foreground: 225 12% 62%;
+    --accent: 230 20% 14%;
+    --accent-foreground: 220 20% 96%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 230 20% 16%;
+    --input: 230 20% 18%;
+    --ring: 178 90% 55%;
+    --chart-1: 178 90% 55%;
+    --chart-2: 349 99% 58%;
+    --chart-3: 260 80% 65%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.75rem;
+    --font-heading: 'Sora', 'Hind Siliguri', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Hind Siliguri', 'Sora', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Sora', 'Hind Siliguri', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sidebar-background: 230 30% 5%;
+    --sidebar-foreground: 220 20% 90%;
+    --sidebar-primary: 178 90% 55%;
+    --sidebar-primary-foreground: 230 30% 6%;
+    --sidebar-accent: 230 20% 12%;
+    --sidebar-accent-foreground: 220 20% 96%;
+    --sidebar-border: 230 20% 14%;
+    --sidebar-ring: 178 90% 55%;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    background-image:
+      radial-gradient(60rem 40rem at 5% -10%, rgba(37, 244, 238, 0.09), transparent 60%),
+      radial-gradient(50rem 40rem at 100% 0%, rgba(254, 44, 85, 0.09), transparent 60%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .glass { @apply bg-white/[0.035] backdrop-blur-xl border border-white/[0.08]; }
+  .glass-strong { @apply bg-[#11131b]/80 backdrop-blur-2xl border border-white/10; }
+  .btn-glow {
+    @apply bg-gradient-to-r from-[#25F4EE] to-[#FE2C55] text-[#07080d] font-semibold shadow-[0_8px_30px_-10px_rgba(254,44,85,0.7)] hover:brightness-110 active:scale-[0.98] transition;
+  }
+}
