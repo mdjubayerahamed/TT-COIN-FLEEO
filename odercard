@@ -1,0 +1,60 @@
+import React from 'react';
+import StatusBadge from '@/components/common/StatusBadge';
+import { taka, num, fmtDate } from '@/lib/format';
+
+const NEXT = {
+  pending: [
+    { s: 'processing', label: 'প্রসেসিং', cls: 'bg-sky-500/15 text-sky-300' },
+    { s: 'cancelled', label: 'বাতিল', cls: 'bg-rose-500/15 text-rose-300' },
+  ],
+  processing: [
+    { s: 'completed', label: 'সম্পন্ন', cls: 'bg-emerald-500/15 text-emerald-300' },
+    { s: 'cancelled', label: 'বাতিল', cls: 'bg-rose-500/15 text-rose-300' },
+  ],
+};
+
+export default function AdminOrderCard({ order: o, onStatus }) {
+  const rows = [
+    ['ইউজার', `${o.user_name || ''} (${o.user_email || o.user_id})`],
+    ['প্যাকেজ', `${o.package_label} × ${o.quantity || 1}`],
+    ['কয়েন', num(o.coin_amount)],
+    ['TikTok', `${o.tiktok_username || ''} ${o.tiktok_info ? '· ' + o.tiktok_info : ''}`],
+    ['TikTok ID/Pass', o.tiktok_id_pass || '—'],
+    ['WhatsApp', o.whatsapp],
+    ['তারিখ', fmtDate(o.created_date)],
+  ];
+
+  return (
+    <div className="glass rounded-2xl p-4 md:p-5">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[#25F4EE]">#{o.order_code}</span>
+          <StatusBadge status={o.status} />
+        </div>
+        <span className="font-heading font-bold text-lg">{taka(o.price)}</span>
+      </div>
+      <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-3 text-sm">
+        {rows.map(([k, v]) => (
+          <div key={k} className="flex gap-2 min-w-0">
+            <dt className="text-white/40 shrink-0 w-20">{k}</dt>
+            <dd className="truncate">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {o.note && <p className="mt-3 text-sm text-white/60 bg-white/[0.03] rounded-xl p-3">{o.note}</p>}
+      {NEXT[o.status] && (
+        <div className="flex gap-2 mt-4">
+          {NEXT[o.status].map((n) => (
+            <button
+              key={n.s}
+              onClick={() => onStatus(o, n.s)}
+              className={`rounded-xl px-4 py-2 text-sm font-medium hover:brightness-125 transition ${n.cls}`}
+            >
+              {n.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
