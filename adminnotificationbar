@@ -1,0 +1,92 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { ShoppingBag, Wallet, X } from 'lucide-react';
+import { useLive } from '@/lib/live';
+import { taka } from '@/lib/format';
+
+export default function AdminNotifications() {
+  const { data: orders = [], isLoading: ordersLoading } = useLive('Order', { sort: '-created_date', limit: 50 });
+  const { data: deposits = [], isLoading: depositsLoading } = useLive('Deposit', { sort: '-created_date', limit: 50 });
+  const prevOrders = useRef(null);
+  const prevDeposits = useRef(null);
+  const [toasts, setToasts] = useState([]);
+
+  const playSound = () => {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {}
+  };
+
+  const fire = (fresh) => {
+    setToasts((t) => [...fresh, ...t].slice(0, 6));
+    playSound();
+    fresh.forEach((nt) => setTimeout(() => setToasts((arr) => arr.filter((x) => x.id !== nt.id)), 6000));
+  };
+
+  useEffect(() => {
+    if (ordersLoading) return;
+    const prev = prevOrders.current;
+    if (prev === null) { prevOrders.current = new Set(orders.map((o) => o.id)); return; }
+    const fresh = orders
+      .filter((o) => !prev.has(o.id))
+      .map((o) => ({
+        id: o.id,
+        type: 'order',
+        title: 'নতুন অর্ডার!',
+        text: `${o.order_code} — ${o.user_name || o.user_email} (${taka(o.price)})`,
+      }));
+    prevOrders.current = new Set(orders.map((o) => o.id));
+    if (fresh.length) fire(fresh);
+  }, [orders, ordersLoading]);
+
+  useEffect(() => {
+    if (depositsLoading) return;
+    const prev = prevDeposits.current;
+    if (prev === null) { prevDeposits.current = new Set(deposits.map((d) => d.id)); return; }
+    const fresh = deposits
+      .filter((d) => !prev.has(d.id))
+      .map((d) => ({
+        id: d.id,
+        type: 'deposit',
+        title: 'নতুন ডিপোজিট!',
+        text: `${d.user_name || d.user_email} — ${taka(d.amount)}`,
+      }));
+    prevDeposits.current = new Set(deposits.map((d) => d.id));
+    if (fresh.length) fire(fresh);
+  }, [deposits, depositsLoading]);
+
+  if (toasts.length === 0) return null;
+
+  return (
+    <div className="fixed top-4 right-4 z-50 space-y-2 w-80 max-w-[calc(100vw-2rem)]">
+      {toasts.map((t) => (
+        <div key={t.id} className="glass-strong rounded-2xl p-4 flex items-start gap-3 shadow-2xl">
+          {t.type === 'order'
+            ? <ShoppingBag className="w-5 h-5 text-[#25F4EE] shrink-0 mt-0.5" />
+            : <Wallet className="w-5 h-5 text-[#FE2C55] shrink-0 mt-0.5" />}
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold text-sm">{t.title}</div>
+            <div className="text-xs text-white/60 truncate">{t.text}</div>
+          </div>
+          <button
+            onClick={() => setToasts((arr) => arr.filter((x) => x.id !== t.id))}
+            className="text-white/40 hover:text-white shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
