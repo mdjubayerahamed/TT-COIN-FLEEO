@@ -1,0 +1,47 @@
+import React, { useState } from 'react';
+import { Info } from 'lucide-react';
+import { useLive } from '@/lib/live';
+import useMe from '@/hooks/useMe';
+import useSettings from '@/hooks/useSettings';
+import useWallet from '@/hooks/useWallet';
+import MethodGrid from '@/components/deposit/MethodGrid';
+import DepositFlow from '@/components/deposit/DepositFlow';
+import { taka } from '@/lib/format';
+
+export default function Deposit() {
+  const s = useSettings();
+  const { data: user } = useMe();
+  const { balance, blocked } = useWallet(user);
+  const { data, isLoading } = useLive('PaymentMethod', { sort: 'sort_order' });
+  const methods = data.filter((m) => m.is_active !== false);
+  const [selId, setSelId] = useState(null);
+  const method = methods.find((m) => m.id === selId) || methods[0];
+
+  return (
+    <div className="max-w-md mx-auto px-4 py-6 space-y-5">
+      <div>
+        <p className="text-xs uppercase tracking-[0.3em] text-[#25F4EE]/80">Deposit</p>
+        <h1 className="font-heading text-2xl font-bold mt-1">ব্যালেন্স যোগ করুন</h1>
+        <p className="text-sm text-white/55 mt-1">
+          বর্তমান ব্যালেন্স: <span className="text-white font-semibold">{taka(balance)}</span>
+        </p>
+      </div>
+      {s.deposit_instructions && (
+        <div className="glass rounded-2xl p-4 flex gap-3 text-sm text-white/70">
+          <Info className="w-4 h-4 text-[#25F4EE] shrink-0 mt-0.5" />
+          <p className="whitespace-pre-line">{s.deposit_instructions}</p>
+        </div>
+      )}
+      {isLoading ? (
+        <div className="glass rounded-2xl h-64 animate-pulse" />
+      ) : methods.length === 0 ? (
+        <div className="glass rounded-2xl p-10 text-center text-white/50">এখন কোনো পেমেন্ট মেথড চালু নেই।</div>
+      ) : (
+        <>
+          <MethodGrid methods={methods} selected={method?.id} onSelect={setSelId} />
+          <DepositFlow method={method} user={user} blocked={blocked} />
+        </>
+      )}
+    </div>
+  );
+}
