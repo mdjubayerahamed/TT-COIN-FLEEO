@@ -1,0 +1,15 @@
+import React from 'react';
+import useSettings from '@/hooks/useSettings';
+
+export default function Footer() {
+  const s = useSettings();
+  return (
+    <footer className="border-t border-white/[0.06] mt-10 pb-24 md:pb-0">
+      <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-3 items-center justify-between text-sm text-white/40">
+        <span className="font-heading font-semibold text-white/70">{s.site_name}</span>
+        <span className="text-center">{s.support_text}</span>
+        <span>© {new Date().getFullYear()}</span>
+      </div>
+    </footer>
+  );
+}
