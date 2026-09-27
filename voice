@@ -1,0 +1,36 @@
+import React, { useEffect } from 'react';
+import useSettings from '@/hooks/useSettings';
+
+const KEY = 'fleeo_voice_played';
+
+export default function WelcomeVoice() {
+  const s = useSettings();
+
+  useEffect(() => {
+    if (s.welcome_voice_enabled === false || !s.welcome_voice_text) return;
+    if (sessionStorage.getItem(KEY)) return;
+    if (!('speechSynthesis' in window)) return;
+
+    const speak = () => {
+      if (sessionStorage.getItem(KEY)) return;
+      sessionStorage.setItem(KEY, '1');
+      try {
+        const utter = new SpeechSynthesisUtterance(s.welcome_voice_text);
+        utter.lang = 'bn-BD';
+        utter.rate = 0.95;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+        const secs = Number(s.welcome_voice_seconds);
+        if (secs > 0) setTimeout(() => window.speechSynthesis.cancel(), secs * 1000);
+      } catch (e) {}
+      cleanup();
+    };
+
+    const handlers = ['click', 'keydown', 'touchstart', 'pointerdown'];
+    const cleanup = () => handlers.forEach((h) => window.removeEventListener(h, speak));
+    handlers.forEach((h) => window.addEventListener(h, speak, { once: true }));
+    return cleanup;
+  }, [s.welcome_voice_enabled, s.welcome_voice_text, s.welcome_voice_seconds]);
+
+  return null;
+}
