@@ -1,0 +1,42 @@
+import React, { useState } from 'react';
+import { Upload, Loader2, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+
+export default function ImageUpload({ value, onChange, label = 'ছবি আপলোড করুন' }) {
+  const [busy, setBusy] = useState(false);
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+      onChange(file_url);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <label className="flex items-center gap-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] p-3 cursor-pointer hover:border-white/30 transition">
+      <input type="file" accept="image/*" className="hidden" onChange={onFile} />
+      {busy ? (
+        <Loader2 className="w-4 h-4 animate-spin text-[#25F4EE]" />
+      ) : value ? (
+        <img src={value} alt="" className="w-10 h-10 rounded-lg object-cover" />
+      ) : (
+        <Upload className="w-4 h-4 text-white/50" />
+      )}
+      <span className="text-sm text-white/70">{label}</span>
+      {value && (
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); onChange(''); }}
+          className="ml-auto p-1 rounded-full hover:bg-white/10"
+        >
+          <X className="w-3.5 h-3.5 text-white/50" />
+        </button>
+      )}
+    </label>
+  );
+}
