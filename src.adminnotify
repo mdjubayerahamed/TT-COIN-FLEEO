@@ -1,0 +1,10 @@
+import { base44 } from '@/api/base44Client';
+
+export async function notifyAdmin({ subject, body }) {
+  try {
+    const list = await base44.entities.SiteSettings.list('created_date', 1);
+    const email = list[0]?.notification_email;
+    if (!email) return;
+    await base44.integrations.Core.SendEmail({ to: email, subject, body });
+  } catch (e) {}
+}
