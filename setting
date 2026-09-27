@@ -1,0 +1,98 @@
+import React, { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loader2, CheckCircle2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { invalidateLive } from '@/lib/live';
+import useSettings from '@/hooks/useSettings';
+import PageTitle from '@/components/admin/PageTitle';
+import FieldInput from '@/components/common/FieldInput';
+
+const GROUPS = [
+  ['ব্র্যান্ডিং', [
+    { key: 'site_name', label: 'ওয়েবসাইটের নাম' },
+    { key: 'logo_url', label: 'লোগো', type: 'image' },
+  ]],
+  ['হোমপেজ', [
+    { key: 'banner_title', label: 'ব্যানার শিরোনাম' },
+    { key: 'banner_subtitle', label: 'ব্যানার সাব-টাইটেল', type: 'textarea' },
+    { key: 'banner_image_url', label: 'ব্যানার ছবি', type: 'image' },
+    { key: 'notice', label: 'নোটিশ (খালি রাখলে লুকানো থাকবে)', type: 'textarea' },
+  ]],
+  ['সাপোর্ট', [
+    { key: 'whatsapp_number', label: 'WhatsApp নম্বর' },
+    { key: 'whatsapp_link', label: 'WhatsApp লিংক (ঐচ্ছিক)' },
+    { key: 'telegram_username', label: 'Telegram ইউজারনেম' },
+    { key: 'telegram_link', label: 'Telegram লিংক (ঐচ্ছিক)' },
+    { key: 'support_text', label: 'সাপোর্ট টেক্সট', type: 'textarea' },
+  ]],
+  ['ডিপোজিট', [
+    { key: 'deposit_instructions', label: 'ডিপোজিট নির্দেশনা', type: 'textarea' },
+  ]],
+  ['নোটিফিকেশন', [
+    { key: 'notification_email', label: 'নোটিফিকেশন ইমেইল (ডিপোজিট/অর্ডার হলে এখানে মেইল যাবে)' },
+  ]],
+  ['ওয়েলকাম ভয়েস', [
+    { key: 'welcome_voice_enabled', label: 'ওয়েলকাম ভয়েস চালু (সাইটে ঢুকলে একবার বাজবে)', type: 'switch' },
+    { key: 'welcome_voice_text', label: 'ভয়েস টেক্সট', type: 'textarea' },
+    { key: 'welcome_voice_seconds', label: 'কত সেকেন্ড বাজবে (০ = পুরো টেক্সট)', type: 'number' },
+  ]],
+];
+
+export default function AdminSettings() {
+  const qc = useQueryClient();
+  const s = useSettings();
+  const [form, setForm] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { setForm(s.record || {}); }, [s.record?.id, s.record?.updated_date]);
+
+  const save = async () => {
+    setSaving(true);
+    const data = {};
+    GROUPS.forEach(([, fields]) =>
+      fields.forEach((f) => {
+        data[f.key] = f.type === 'switch' ? form[f.key] === true : (form[f.key] || '');
+      })
+    );
+    if (s.record) await base44.entities.SiteSettings.update(s.record.id, data);
+    else await base44.entities.SiteSettings.create(data);
+    invalidateLive(qc, 'SiteSettings');
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="max-w-3xl">
+      <PageTitle
+        title="ওয়েবসাইট সেটিংস"
+        subtitle="এখানের পরিবর্তন ইউজার প্যানেলে লাইভ দেখা যাবে"
+        action={
+          <button
+            onClick={save}
+            disabled={saving}
+            className="btn-glow rounded-xl px-5 py-2.5 text-sm flex items-center gap-2 w-fit disabled:opacity-60"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : null}
+            {saved ? 'সংরক্ষিত' : 'সংরক্ষণ করুন'}
+          </button>
+        }
+      />
+      <div className="space-y-5">
+        {GROUPS.map(([title, fields]) => (
+          <div key={title} className="glass rounded-2xl p-5">
+            <h3 className="font-heading font-semibold mb-4">{title}</h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {fields.map((f) => (
+                <div key={f.key} className={f.type === 'textarea' ? 'sm:col-span-2' : ''}>
+                  <FieldInput field={f} value={form[f.key]} onChange={(v) => setForm((x) => ({ ...x, [f.key]: v }))} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
