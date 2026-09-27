@@ -1,0 +1,19 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+
+export default function StatCard({ icon: Icon, label, value, accent = 'text-[#25F4EE]', index = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="glass rounded-2xl p-4 md:p-5"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-xs md:text-sm text-white/50">{label}</span>
+        {Icon && <Icon className={`w-4 h-4 ${accent}`} />}
+      </div>
+      <div className="mt-2 font-heading text-xl md:text-2xl font-bold tabular-nums">{value}</div>
+    </motion.div>
+  );
+}
