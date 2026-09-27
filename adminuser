@@ -1,0 +1,80 @@
+import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { base44 } from '@/api/base44Client';
+import { useLive, invalidateLive } from '@/lib/live';
+import { calcBalance } from '@/lib/balance';
+import { fieldCls } from '@/lib/format';
+import PageTitle from '@/components/admin/PageTitle';
+import AdminUserRow from '@/components/admin/AdminUserRow';
+import AdjustBalanceDialog from '@/components/admin/AdjustBalanceDialog';
+import UserHistoryDialog from '@/components/admin/UserHistoryDialog';
+
+export default function AdminUsers() {
+  const qc = useQueryClient();
+  const { data: users = [], isLoading } = useLive('User', { sort: '-created_date', limit: 1000 });
+  const { data: orders } = useLive('Order');
+  const { data: deposits } = useLive('Deposit');
+  const { data: adjustments } = useLive('BalanceAdjustment');
+  const { data: blocks } = useLive('UserBlock');
+  const [q, setQ] = useState('');
+  const [adjust, setAdjust] = useState(null);
+  const [history, setHistory] = useState(null);
+
+  const toggleBlock = async (u) => {
+    const b = blocks.find((x) => x.user_id === u.id);
+    if (b) await base44.entities.UserBlock.delete(b.id);
+    else await base44.entities.UserBlock.create({ user_id: u.id, user_email: u.email });
+    invalidateLive(qc, 'UserBlock');
+  };
+
+  const toggleAdmin = async (u) => {
+    await base44.entities.User.update(u.id, { role: u.role === 'admin' ? 'user' : 'admin' });
+    invalidateLive(qc, 'User');
+  };
+
+  const list = users.filter((u) => `${u.full_name} ${u.email}`.toLowerCase().includes(q.toLowerCase()));
+
+  return (
+    <div>
+      <PageTitle title="ইউজার ম্যানেজমেন্ট" subtitle={`মোট ${users.length} জন ইউজার`} />
+      <div className="relative mb-5">
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="নাম বা ইমেইল দিয়ে খুঁজুন..."
+          className={`${fieldCls} pl-9`}
+        />
+      </div>
+      {isLoading ? (
+        <div className="glass rounded-2xl h-40 animate-pulse" />
+      ) : (
+        <div className="space-y-2.5">
+          {list.map((u) => (
+            <AdminUserRow
+              key={u.id}
+              user={u}
+              balance={calcBalance(u.id, deposits, orders, adjustments)}
+              orderCount={orders.filter((o) => o.user_id === u.id).length}
+              blocked={blocks.some((b) => b.user_id === u.id)}
+              onAdjust={(mode) => setAdjust({ user: u, mode })}
+              onHistory={() => setHistory(u)}
+              onToggleBlock={() => toggleBlock(u)}
+              onToggleAdmin={() => toggleAdmin(u)}
+            />
+          ))}
+        </div>
+      )}
+      <AdjustBalanceDialog user={adjust?.user} mode={adjust?.mode} onClose={() => setAdjust(null)} />
+      <UserHistoryDialog
+        user={history}
+        orders={orders}
+        deposits={deposits}
+        adjustments={adjustments}
+        onClose={() => setHistory(null)}
+      />
+    </div>
+  );
+}
