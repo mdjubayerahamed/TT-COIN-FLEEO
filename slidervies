@@ -1,0 +1,51 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { Image } from '@/components/ui/image';
+
+export default function SlideView({ slide }) {
+  return (
+    <motion.div
+      key={slide.id}
+      initial={{ opacity: 0, scale: 1.04 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute inset-0"
+    >
+      {slide.image_url ? (
+        <Image src={slide.image_url} alt={slide.title || ''} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full bg-[radial-gradient(ellipse_at_top_left,rgba(37,244,238,0.25),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(254,44,85,0.25),transparent_55%)]" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#07080d]/90 via-[#07080d]/40 to-transparent" />
+      <div className="absolute inset-y-0 left-0 flex flex-col justify-center p-6 md:p-12 max-w-xl">
+        {slide.title && (
+          <motion.h2
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="font-heading text-2xl sm:text-3xl md:text-5xl font-extrabold leading-tight tracking-tight"
+          >
+            {slide.title}
+          </motion.h2>
+        )}
+        {slide.subtitle && (
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-2 md:mt-4 text-sm md:text-lg text-white/70 max-w-md"
+          >
+            {slide.subtitle}
+          </motion.p>
+        )}
+        {slide.link && (
+          <a href={slide.link} className="mt-4 md:mt-6 inline-flex w-fit items-center gap-2 btn-glow rounded-full px-5 py-2.5 text-sm">
+            বিস্তারিত <ArrowRight className="w-4 h-4" />
+          </a>
+        )}
+      </div>
+    </motion.div>
+  );
+}
