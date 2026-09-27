@@ -1,0 +1,16 @@
+import React from 'react';
+import { Megaphone } from 'lucide-react';
+
+export default function NoticeBar({ text }) {
+  if (!text) return null;
+  return (
+    <div className="glass rounded-2xl px-3 py-2.5 flex items-center gap-3 overflow-hidden">
+      <span className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-[#FE2C55] bg-[#FE2C55]/10 rounded-full px-2.5 py-1">
+        <Megaphone className="w-3.5 h-3.5" /> নোটিশ
+      </span>
+      <div className="overflow-hidden flex-1">
+        <div className="whitespace-nowrap animate-marquee text-sm text-white/80">{text}</div>
+      </div>
+    </div>
+  );
+}
