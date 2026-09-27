@@ -1,0 +1,36 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import Logo from '@/components/brand/Logo';
+import useSettings from '@/hooks/useSettings';
+
+export default function AdminSidebar({ tabs, tab, setTab }) {
+  const s = useSettings();
+  return (
+    <aside className="md:w-64 md:min-h-screen md:sticky md:top-0 border-b md:border-b-0 md:border-r border-white/[0.06] bg-[#07080d]/80 backdrop-blur-xl z-30 sticky top-0">
+      <div className="p-4 md:p-5 flex md:block items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Logo settings={s} to="/admin" />
+          <span className="text-[10px] uppercase tracking-widest rounded-full bg-[#FE2C55]/15 text-[#FE2C55] px-2 py-0.5">Admin</span>
+        </div>
+        <Link to="/" className="md:mt-5 flex items-center gap-1.5 text-xs text-white/45 hover:text-white">
+          <ArrowLeft className="w-3.5 h-3.5" /> সাইটে ফিরে যান
+        </Link>
+      </div>
+      <nav className="flex md:flex-col gap-1 overflow-x-auto px-3 pb-3 md:px-3">
+        {tabs.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm transition ${
+              tab === id ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Icon className={`w-4 h-4 ${tab === id ? 'text-[#25F4EE]' : ''}`} />
+            {label}
+          </button>
+        ))}
+      </nav>
+    </aside>
+  );
+}
