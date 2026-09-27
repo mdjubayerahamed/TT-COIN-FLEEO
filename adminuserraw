@@ -1,0 +1,41 @@
+import React from 'react';
+import { Plus, Minus, History, Ban, CheckCircle2, ShieldCheck, Shield } from 'lucide-react';
+import { taka } from '@/lib/format';
+
+export default function AdminUserRow({ user, balance, orderCount, blocked, onAdjust, onHistory, onToggleBlock, onToggleAdmin }) {
+  const btn = 'p-2 rounded-lg bg-white/5 hover:bg-white/10 transition';
+  return (
+    <div className="glass rounded-2xl p-4 flex flex-col md:flex-row md:items-center gap-3 justify-between">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold truncate">{user.full_name || 'নাম নেই'}</span>
+          {user.role === 'admin' && <span className="text-[10px] rounded-full bg-[#25F4EE]/15 text-[#25F4EE] px-2 py-0.5">ADMIN</span>}
+          {blocked && <span className="text-[10px] rounded-full bg-rose-500/15 text-rose-300 px-2 py-0.5">BLOCKED</span>}
+        </div>
+        <div className="text-xs text-white/45 truncate">{user.email} · {orderCount}টি অর্ডার</div>
+      </div>
+      <div className="flex items-center gap-3 justify-between md:justify-end">
+        <span className="font-heading font-bold tabular-nums">{taka(balance)}</span>
+        <div className="flex gap-1.5">
+          <button title="ব্যালেন্স যোগ" onClick={() => onAdjust('add')} className={`${btn} text-emerald-300`}><Plus className="w-4 h-4" /></button>
+          <button title="ব্যালেন্স কাটুন" onClick={() => onAdjust('deduct')} className={`${btn} text-amber-300`}><Minus className="w-4 h-4" /></button>
+          <button title="হিস্টোরি" onClick={onHistory} className={btn}><History className="w-4 h-4" /></button>
+          <button
+            title={user.role === 'admin' ? 'অ্যাডমিন সরান' : 'অ্যাডমিন বানান'}
+            onClick={onToggleAdmin}
+            className={`${btn} ${user.role === 'admin' ? 'text-[#25F4EE]' : 'text-white/40'}`}
+          >
+            {user.role === 'admin' ? <ShieldCheck className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+          </button>
+          <button
+            title={blocked ? 'আনব্লক' : 'ব্লক'}
+            onClick={onToggleBlock}
+            className={`${btn} ${blocked ? 'text-emerald-300' : 'text-rose-300'}`}
+          >
+            {blocked ? <CheckCircle2 className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
