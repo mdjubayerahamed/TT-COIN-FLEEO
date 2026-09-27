@@ -1,0 +1,85 @@
+import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { base44 } from '@/api/base44Client';
+import { useLive, invalidateLive } from '@/lib/live';
+import PageTitle from '@/components/admin/PageTitle';
+import FormDialog from '@/components/common/FormDialog';
+
+export default function CrudSection({ entity, title, subtitle, fields, defaults, renderItem, grid }) {
+  const qc = useQueryClient();
+  const { data, isLoading } = useLive(entity, { sort: 'sort_order' });
+  const [editing, setEditing] = useState(null);
+  const api = base44.entities[entity];
+
+  const save = async (values) => {
+    if (editing.id) await api.update(editing.id, values);
+    else await api.create(values);
+    invalidateLive(qc, entity);
+    setEditing(null);
+  };
+
+  const remove = async (item) => {
+    if (!window.confirm('মুছে ফেলতে চান?')) return;
+    await api.delete(item.id);
+    invalidateLive(qc, entity);
+  };
+
+  const toggle = async (item) => {
+    await api.update(item.id, { is_active: item.is_active === false });
+    invalidateLive(qc, entity);
+  };
+
+  return (
+    <div>
+      <PageTitle
+        title={title}
+        subtitle={subtitle}
+        action={
+          <button
+            onClick={() => setEditing({ ...defaults })}
+            className="btn-glow rounded-xl px-4 py-2.5 text-sm flex items-center gap-2 w-fit"
+          >
+            <Plus className="w-4 h-4" /> নতুন যোগ করুন
+          </button>
+        }
+      />
+      {isLoading ? (
+        <div className="glass rounded-2xl h-40 animate-pulse" />
+      ) : data.length === 0 ? (
+        <div className="glass rounded-2xl p-10 text-center text-white/45">এখনো কিছু যোগ করা হয়নি</div>
+      ) : (
+        <div className={`grid gap-4 ${grid}`}>
+          {data.map((item) => (
+            <div key={item.id} className="glass rounded-2xl p-4 flex flex-col gap-3">
+              <div className="flex-1">{renderItem(item)}</div>
+              <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                <label className="flex items-center gap-2 text-xs text-white/55">
+                  <Switch checked={item.is_active !== false} onCheckedChange={() => toggle(item)} />
+                  {item.is_active !== false ? 'ON' : 'OFF'}
+                </label>
+                <div className="flex gap-1">
+                  <button onClick={() => setEditing(item)} className="p-2 rounded-lg hover:bg-white/10 text-white/60">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => remove(item)} className="p-2 rounded-lg hover:bg-rose-500/10 text-rose-300">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <FormDialog
+        open={!!editing}
+        title={editing?.id ? 'এডিট করুন' : 'নতুন যোগ করুন'}
+        fields={fields}
+        initial={editing}
+        onSubmit={save}
+        onClose={() => setEditing(null)}
+      />
+    </div>
+  );
+}
