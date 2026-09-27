@@ -1,0 +1,37 @@
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useLive } from '@/lib/live';
+import useMe from '@/hooks/useMe';
+import PackageCard from '@/components/home/PackageCard';
+import OrderDialog from '@/components/order/OrderDialog';
+
+export default function PackageSection() {
+  const { data, isLoading } = useLive('CoinPackage', { sort: 'sort_order' });
+  const { data: user } = useMe();
+  const [selected, setSelected] = useState(null);
+  const onOrder = (p) => (user ? setSelected(p) : base44.auth.redirectToLogin(window.location.href));
+
+  return (
+    <section id="packages">
+      <div className="flex items-end justify-between mb-5">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#25F4EE]/80">Packages</p>
+          <h2 className="font-heading text-2xl md:text-3xl font-bold mt-1">কয়েন প্যাকেজ</h2>
+        </div>
+        <p className="hidden sm:block text-sm text-white/45">দাম সবসময় লাইভ আপডেট</p>
+      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="glass rounded-3xl h-72 animate-pulse" />)}
+        </div>
+      ) : data.length === 0 ? (
+        <div className="glass rounded-3xl p-10 text-center text-white/50">এখনো কোনো প্যাকেজ যোগ করা হয়নি।</div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+          {data.map((p, i) => <PackageCard key={p.id} pkg={p} index={i} onOrder={onOrder} />)}
+        </div>
+      )}
+      <OrderDialog pkg={selected} user={user} onClose={() => setSelected(null)} />
+    </section>
+  );
+}
