@@ -1,0 +1,42 @@
+import React, { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { useLive } from '@/lib/live';
+
+const KEY = 'fleeo_popup_seen';
+
+export default function SessionPopup() {
+  const { data } = useLive('Popup', { sort: 'sort_order' });
+  const popups = data.filter((p) => p.is_active !== false);
+  const [show, setShow] = useState(false);
+  const [popup, setPopup] = useState(null);
+
+  useEffect(() => {
+    if (popups.length && !sessionStorage.getItem(KEY)) {
+      setPopup(popups[0]);
+      setShow(true);
+      sessionStorage.setItem(KEY, '1');
+    }
+  }, [popups.length]);
+
+  if (!show || !popup) return null;
+
+  const inner = popup.image_url
+    ? <img src={popup.image_url} alt="popup" className="w-[88vw] max-w-sm rounded-2xl object-cover" />
+    : null;
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShow(false)}>
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={() => setShow(false)}
+          className="absolute -top-3 -right-3 z-10 w-8 h-8 rounded-full bg-white text-black grid place-items-center shadow-lg"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        {popup.link ? (
+          <a href={popup.link} target="_blank" rel="noreferrer" onClick={() => setShow(false)}>{inner}</a>
+        ) : inner}
+      </div>
+    </div>
+  );
+}
