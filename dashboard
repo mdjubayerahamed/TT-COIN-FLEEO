@@ -1,0 +1,41 @@
+import React from 'react';
+import { ShoppingBag, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import useMe from '@/hooks/useMe';
+import useWallet from '@/hooks/useWallet';
+import StatCard from '@/components/common/StatCard';
+import BalanceHero from '@/components/dashboard/BalanceHero';
+import OrderList from '@/components/dashboard/OrderList';
+import DepositList from '@/components/dashboard/DepositList';
+import ReferralCard from '@/components/dashboard/ReferralCard';
+
+export default function Dashboard() {
+  const { data: user } = useMe();
+  const { balance, orders, deposits, blocked } = useWallet(user);
+  const count = (s) => orders.filter((o) => o.status === s).length;
+
+  const stats = [
+    { label: 'মোট অর্ডার', value: orders.length, icon: ShoppingBag },
+    { label: 'পেন্ডিং', value: count('pending') + count('processing'), icon: Clock, accent: 'text-amber-300' },
+    { label: 'সম্পন্ন', value: count('completed'), icon: CheckCircle2, accent: 'text-emerald-300' },
+    { label: 'বাতিল', value: count('cancelled'), icon: XCircle, accent: 'text-rose-300' },
+  ];
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 space-y-6">
+      <BalanceHero user={user} balance={balance} blocked={blocked} />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {stats.map((s, i) => <StatCard key={s.label} {...s} index={i} />)}
+      </div>
+      <ReferralCard />
+      <Tabs defaultValue="orders">
+        <TabsList className="bg-white/5 rounded-xl p-1">
+          <TabsTrigger value="orders" className="rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white">আমার অর্ডার</TabsTrigger>
+          <TabsTrigger value="deposits" className="rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white">ডিপোজিট হিস্টোরি</TabsTrigger>
+        </TabsList>
+        <TabsContent value="orders" className="mt-4"><OrderList orders={orders} /></TabsContent>
+        <TabsContent value="deposits" className="mt-4"><DepositList deposits={deposits} /></TabsContent>
+      </Tabs>
+    </div>
+  );
+}
