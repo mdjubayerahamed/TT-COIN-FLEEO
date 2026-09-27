@@ -1,0 +1,31 @@
+import React from 'react';
+import CrudSection from '@/components/admin/CrudSection';
+
+const FIELDS = [
+  { key: 'image_url', label: 'স্লাইডার ছবি *', type: 'image', required: true },
+  { key: 'title', label: 'শিরোনাম' },
+  { key: 'subtitle', label: 'সাব-টাইটেল', type: 'textarea' },
+  { key: 'link', label: 'বাটন লিংক (ঐচ্ছিক)', placeholder: '#packages' },
+  { key: 'sort_order', label: 'ক্রম', type: 'number' },
+  { key: 'is_active', label: 'চালু (ON/OFF)', type: 'switch' },
+];
+
+export default function AdminSliders() {
+  return (
+    <CrudSection
+      entity="Slider"
+      title="হোমপেজ স্লাইডার"
+      subtitle="কোনো স্লাইড না থাকলে সেটিংসের ব্যানার দেখাবে"
+      fields={FIELDS}
+      defaults={{ is_active: true, sort_order: 0 }}
+      grid="sm:grid-cols-2"
+      renderItem={(s) => (
+        <div>
+          <img src={s.image_url} alt="" className="w-full aspect-[21/9] rounded-xl object-cover" />
+          <div className="font-semibold mt-3">{s.title || 'শিরোনাম নেই'}</div>
+          {s.subtitle && <div className="text-sm text-white/45 line-clamp-2">{s.subtitle}</div>}
+        </div>
+      )}
+    />
+  );
+}
