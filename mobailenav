@@ -1,0 +1,34 @@
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { Home, LayoutDashboard, Wallet, Shield } from 'lucide-react';
+import useMe from '@/hooks/useMe';
+
+export default function MobileNav() {
+  const { data: user } = useMe();
+  if (!user) return null;
+
+  const items = [
+    { to: '/', label: 'হোম', icon: Home, end: true },
+    { to: '/dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
+    { to: '/deposit', label: 'ব্যালেন্স', icon: Wallet },
+    ...(user.role === 'admin' ? [{ to: '/admin', label: 'অ্যাডমিন', icon: Shield }] : []),
+  ];
+
+  return (
+    <nav className="md:hidden fixed bottom-3 inset-x-3 z-40 glass-strong rounded-2xl px-2 py-1.5 flex justify-around">
+      {items.map(({ to, label, icon: Icon, end }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end={end}
+          className={({ isActive }) =>
+            `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-[11px] transition ${isActive ? 'text-[#25F4EE] bg-white/5' : 'text-white/50'}`
+          }
+        >
+          <Icon className="w-5 h-5" />
+          {label}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
